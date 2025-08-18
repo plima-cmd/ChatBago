@@ -1,1 +1,9 @@
 rasa
+fastapi==0.115.0
+uvicorn==0.30.6
+pymilvus==2.4.6
+milvus-lite==2.4.6
+sentence-transformers==3.0.1
+pypdf==4.3.1
+requests==2.32.3
+environs

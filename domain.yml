@@ -8,6 +8,8 @@ intents:
   - mood_great
   - mood_unhappy
   - bot_challenge
+  - pregunta
+  - pregunta_dosis
 
 responses:
   utter_greet:
@@ -32,3 +34,7 @@ responses:
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true
+
+actions:
+  - action_chat_with_rag
+  - action_pregunta_dosis

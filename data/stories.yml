@@ -28,3 +28,13 @@ stories:
   - action: utter_did_that_help
   - intent: deny
   - action: utter_goodbye
+
+- story: Chat con RAG
+  steps:
+    - intent: pregunta
+    - action: action_chat_with_rag
+
+- story: Pregunta dosis
+  steps:
+    - intent: pregunta_dosis
+    - action: action_pregunta_dosis
