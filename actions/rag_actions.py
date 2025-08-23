@@ -16,6 +16,7 @@ ENV:
 """
 import argparse
 import os
+import re
 from typing import List, Optional, Dict, Any
 import time
 import requests
@@ -27,9 +28,14 @@ from pymilvus import (
 )
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
+from fastapi.middleware.cors import CORSMiddleware
+
+#import socketio
 
 
-import re
+
+
+
 
 def clean_text(t: str) -> str:
     # Une palabras cortadas por guion al final de línea, pero preserva saltos
@@ -237,11 +243,26 @@ def call_ollama_chat(model: str, system: str, user: str, options: Optional[Dict[
     )
 
 def build_system_prompt() -> str:
-    return (
+    """return (
         "Eres un asistente que responde en español usando exclusivamente el CONTEXTO proporcionado. "
         "Si la respuesta no está en el contexto, responde con: 'No se encuentra en el documento.' "
         "Cuando sea útil, cita brevemente el fragmento relevante entre comillas."
-    )
+    )"""
+    return (
+     """Rol: Eres un asistente especializado en vademécum médico.
+
+        Objetivo: Tu función es brindar información exacta, clara y concisa sobre medicamentos únicamente a partir de datos oficiales del vademécum.
+
+        Reglas de seguridad y alcance:
+        1. Limítate a información factual: nombre comercial, principio activo, dosis genéricas, contraindicaciones, efectos secundarios, presentaciones, interacciones y advertencias.
+        2. No inventes información. Si no tienes datos de un medicamento, responde: "No tengo información registrada sobre ese medicamento."
+        3. No des diagnósticos médicos ni recomendaciones personalizadas de tratamiento.
+        4. Si el usuario pide dosis personalizadas, preparación casera de fármacos, mezclas no documentadas o usos fuera del vademécum, rechaza educadamente con: "No puedo dar indicaciones personalizadas. Solo puedo compartir la información registrada en el vademécum. Consulte a un médico o farmacéutico."
+        5. Si detectas una situación de emergencia (ejemplo: sobredosis, intoxicación, malestar grave), responde de inmediato: "Esto puede ser una emergencia. Acuda de inmediato a un centro de salud o llame a los servicios de emergencia."
+        6. Siempre incluye al final de cada respuesta la advertencia: "⚠️ Esta información es solo de carácter informativo y no sustituye la consulta médica profesional."
+
+        Estilo de respuesta: Usa un lenguaje claro, directo y estructurado. Cuando sea posible, organiza la información en listas para mayor legibilidad."""
+            )
 
 def build_user_prompt(question: str, contexts: List[str]) -> str:
     ctx = "\n\n".join([f"[{i+1}] {c}" for i, c in enumerate(contexts)])
@@ -254,6 +275,37 @@ def build_user_prompt(question: str, contexts: List[str]) -> str:
 
 # ---------------- API ----------------
 app = FastAPI(title="RAG Milvus Lite + Ollama")
+'''sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+
+
+# Monta el servidor Socket.IO en FastAPI
+app_socketio = socketio.ASGIApp(sio, other_asgi_app=app)
+
+# Ejemplo de evento
+@sio.event
+async def connect(sid, environ):
+    print(f"Cliente conectado: {sid}")
+
+@sio.event
+async def disconnect(sid):
+    print(f"Cliente desconectado: {sid}")
+
+@sio.event
+async def chat_message(sid, data):
+    print(f"Mensaje recibido: {data}")
+    await sio.emit('chat_response', {'response': 'Mensaje recibido'}, to=sid)
+
+# Para correr: uvicorn rag_actions:app_socketio --host 0.0.0.0 --port 8000
+
+'''
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Query(BaseModel):
     question: str

@@ -135,7 +135,7 @@ class WhatsAppCloudInput(InputChannel):
                     user_msg = UserMessage(
                         text=text,
                         output_channel=out,
-                        sender_id=sender,              # IMPORTANT: usar el número como sender_id
+                        sender_id=sender,        
                         input_channel=self.name()
                     )
                     await on_new_message(user_msg)

@@ -7,3 +7,5 @@ sentence-transformers==3.0.1
 pypdf==4.3.1
 requests==2.32.3
 environs
+python-socketio[asgi]
+marshmallow==3.13.0
